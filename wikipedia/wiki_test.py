@@ -71,5 +71,26 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual("start De betekenis uit", result)
 
 
+    def test_split_text_in_sentences(self):
+        self.assertEqual(['s1', 's2'], wiki.split_in_sentences('s1. s2'))
+        self.assertEqual(['s3', 's4'], wiki.split_in_sentences('s3. s4.'))
+
+    def test_grafton_case(self):
+        data = wiki.read_wikipedia_page_from_url("https://nl.wikipedia.org/api/rest_v1/page/html/Grafton_(Cheshire)")
+        plain_text = wiki.get_plain_text_from_wikipedia(data)
+        result = ' '.join(plain_text)
+        self.assertEqual('Grafton is een plaats en civil parish in het bestuurlijke gebied Cheshire West and Chester, in het Engelse graafschap Cheshire.', result)
+
+    def test_is_maar_want_sentence_returns_sentence_with_key_words_only(self):
+        want_sentence = 'this is a, want sentence'
+        maar_sentence = 'this is a maar, sentence'
+        should_not_appear_sentence = 'this should not appear in result'
+        partial_match_should_not_appear = 'met zijn verwant, de (noordelijke)'
+        self.assertTrue(wiki.is_maar_want_sentence(want_sentence), 'want sentence should be in result')
+        self.assertTrue(wiki.is_maar_want_sentence(maar_sentence), 'maar sentence should be in result')
+        self.assertFalse(wiki.is_maar_want_sentence(should_not_appear_sentence), 'should not appear sentence should not be in result')
+        self.assertFalse(wiki.is_maar_want_sentence(partial_match_should_not_appear), 'partial match should not be in result')
+
+
 if __name__ == '__main__':
     unittest.main()
