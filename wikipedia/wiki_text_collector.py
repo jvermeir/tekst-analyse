@@ -5,6 +5,7 @@ import time
 import json
 import page_data
 import result
+import sys
 
 start_of_text_line_pattern = r"<p id=\"mw\w\w\">(.*?)"
 bold_pattern = r"<b id=\"mw.*?\">(.*?)</b>"
@@ -22,7 +23,7 @@ sub_pattern = r"<sub id=.*?>(.*?)</sub>"
 headers = {
     'User-Agent': 'jvermeir@hotmail.com',
 }
-roll_over_file_size = 10*1024*1024
+roll_over_file_size = 200*1024
 
 
 replace_patterns = [start_of_text_line_pattern, bold_pattern, link_pattern, i_pattern, sub_pattern]
@@ -32,6 +33,7 @@ history = set()
 
 def check_if_page_is_new(url):
     if url in history:
+        print ("*** skip " + url)
         return False
     return True
 
@@ -46,7 +48,7 @@ def read_wikipedia_page():
     response = requests.get('https://nl.wikipedia.org/api/rest_v1/page/random/html', headers, allow_redirects=True)
     article_url = response.url.replace('https://nl.wikipedia.org/api/rest_v1/page/html/','')
     while check_if_page_is_new(article_url) == False:
-        response = requests.get('https://nl.wikipedia.org/api/rest_v1/page/random/html', headers, allow_redirects=True)
+        response = requests.get('https://nl.wikipedia.org/api/rest_v1/page/random/html', headers, allow_redirects=True, timeout=1)
         article_url = response.url.replace('https://nl.wikipedia.org/api/rest_v1/page/html/','')
     history.add (article_url)
     return page_data.PageData(article_url, response.text.splitlines())
@@ -110,29 +112,48 @@ def add_page_data_to_dict(wiki_page, sentences, results):
 def store_results(wiki_page, sentences, results):
     results.addPage(wiki_page, sentences)
     if results.data_size > roll_over_file_size:
+        print ("***  storing results in ")
+        print (results.data_file_name)
         json.dump(results.pages, results.data_file)
         results = result.Result.reset()
     return results
 
 
 def main():
+    commandline_arguments = getopts(sys.argv)
+    if '-c' not in commandline_arguments:
+        sys.exit("Usage: python wiki_text_collector.py -c <number of pages to read from Wikipedia>")
+    number_of_pages_to_read = int(commandline_arguments.get('-c'))
+    print ("*** Reading " + str(number_of_pages_to_read) + " pages")
+
     read_history("data/history.txt")
-
     results = result.Result.reset()
-    for i in range(0, 20):
-        wiki_page = read_wikipedia_page()
-        print(wiki_page.page_name)
-        lines = get_plain_text_from_wikipedia(wiki_page.lines)
-        sentences = get_sentences(lines)
-        results = store_results(wiki_page, sentences, results)
+    try:
+        for i in range(0, number_of_pages_to_read):
+            wiki_page = read_wikipedia_page()
+            print(wiki_page.page_name)
+            lines = get_plain_text_from_wikipedia(wiki_page.lines)
+            sentences = get_sentences(lines)
+            results = store_results(wiki_page, sentences, results)
+            time.sleep(0.5)
 
-        time.sleep(0.5)
-
-    json.dump(results.pages, results.data_file)
+    except Exception as e:
+        print(e)
+        print ("*** exception, writing results ")
+        print (results.data_file_name)
+        json.dump(results.pages, results.data_file)
 
     with codecs.open("data/history.txt", "w", encoding='utf-8') as history_file:
         history_file.writelines( "%s\n" % line for line in history )
 
+
+def getopts(argv):
+    opts = {}
+    while argv:
+        if argv[0][0] == '-':
+            opts[argv[0]] = argv[1]
+        argv = argv[1:]
+    return opts
 
 if __name__ == "__main__":
     main()

@@ -1,3 +1,6 @@
+#
+# Store results while loading pages and retrieving text
+
 import codecs
 import sys
 import time
