@@ -9,12 +9,12 @@
 ## run
 
 ```
-python wiki.py
+python wiki_text_collector.py
 ```
 
 ## TODO
 
-- read more text from Wikipedia, avoid reading duplicates
-- extract sentences
-- store sentences in database
+done read more text from Wikipedia, avoid reading duplicates
+done  extract sentences
+done store sentences in database
 - extract only sentences that contain specific words like 'maar', 'want', 'daardoor' ...
