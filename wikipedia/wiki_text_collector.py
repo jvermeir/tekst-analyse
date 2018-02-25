@@ -20,6 +20,7 @@ p_pattern = r"<p id=\"mw.*?\">"
 link_rel_pattern = r"<link rel=.*?/>"
 br_pattern = r"<br id=\"mw.*?\"/>"
 sub_pattern = r"<sub id=.*?>(.*?)</sub>"
+figure_pattern = r"<figure class=.*?</figure>"
 headers = {
     'User-Agent': 'jvermeir@hotmail.com',
 }
@@ -27,7 +28,7 @@ roll_over_file_size = 200*1024
 
 
 replace_patterns = [start_of_text_line_pattern, bold_pattern, link_pattern, i_pattern, sub_pattern]
-remove_patterns = [span_pattern, script_pattern, slash_p_pattern, sup_pattern, end_of_span_pattern, p_pattern, link_rel_pattern, br_pattern]
+remove_patterns = [span_pattern, script_pattern, slash_p_pattern, sup_pattern, end_of_span_pattern, p_pattern, link_rel_pattern, br_pattern, figure_pattern]
 
 history = set()
 
@@ -45,11 +46,11 @@ def read_wikipedia_page_from_url(url):
 
 
 def read_wikipedia_page():
-    response = requests.get('https://nl.wikipedia.org/api/rest_v1/page/random/html', headers, allow_redirects=True)
-    article_url = response.url.replace('https://nl.wikipedia.org/api/rest_v1/page/html/','')
-    while check_if_page_is_new(article_url) == False:
-        response = requests.get('https://nl.wikipedia.org/api/rest_v1/page/random/html', headers, allow_redirects=True, timeout=1)
+    new_page = False
+    while not new_page:
+        response = requests.get('https://nl.wikipedia.org/api/rest_v1/page/random/html', headers, allow_redirects=True)
         article_url = response.url.replace('https://nl.wikipedia.org/api/rest_v1/page/html/','')
+        new_page = check_if_page_is_new(article_url)
     history.add (article_url)
     return page_data.PageData(article_url, response.text.splitlines())
 
@@ -111,6 +112,7 @@ def add_page_data_to_dict(wiki_page, sentences, results):
 
 def store_results(wiki_page, sentences, results):
     results.addPage(wiki_page, sentences)
+    print (results.data_size)
     if results.data_size > roll_over_file_size:
         print ("***  storing results in ")
         print (results.data_file_name)
@@ -128,8 +130,8 @@ def main():
 
     read_history("data/history.txt")
     results = result.Result.reset()
-    try:
-        for i in range(0, number_of_pages_to_read):
+    for i in range(0, number_of_pages_to_read):
+        try:
             wiki_page = read_wikipedia_page()
             print(wiki_page.page_name)
             lines = get_plain_text_from_wikipedia(wiki_page.lines)
@@ -137,11 +139,11 @@ def main():
             results = store_results(wiki_page, sentences, results)
             time.sleep(0.5)
 
-    except Exception as e:
-        print(e)
-        print ("*** exception, writing results ")
-        print (results.data_file_name)
-        json.dump(results.pages, results.data_file)
+        except Exception as e:
+            print(e)
+            print ("*** exception, writing results ")
+            print (results.data_file_name)
+            json.dump(results.pages, results.data_file)
 
     with codecs.open("data/history.txt", "w", encoding='utf-8') as history_file:
         history_file.writelines( "%s\n" % line for line in history )

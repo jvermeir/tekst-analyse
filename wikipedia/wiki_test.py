@@ -108,6 +108,21 @@ class TestStringMethods(unittest.TestCase):
             json.dump(results.pages, results.data_file)
         self.assertEqual(3,len(os.listdir(result.Result.file_name_prefix)))
 
+    def test_table_is_removed(self):
+        # TODO: this removes way too much text, see https://nl.wikipedia.org/api/rest_v1/page/html/NK_Vara%C5%BEdin
+        try:
+            data = []
+            with open("table_test.html", "r") as test_data:
+                for line in test_data.readlines():
+                    data.append(line.rstrip())
+            plain_text = wiki.get_plain_text_from_wikipedia(data)
+            result = ' '.join(plain_text)
+            self.assertFalse("<table>" in result)
+            self.assertFalse("</table>" in result)
+        except Exception as e:
+            print (e)
+            self.fail("error loading table_test.html")
+
 
 if __name__ == '__main__':
     unittest.main()
