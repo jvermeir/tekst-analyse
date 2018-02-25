@@ -24,7 +24,7 @@ figure_pattern = r"<figure class=.*?</figure>"
 headers = {
     'User-Agent': 'jvermeir@hotmail.com',
 }
-roll_over_file_size = 200*1024
+roll_over_file_size = 10*1024
 
 
 replace_patterns = [start_of_text_line_pattern, bold_pattern, link_pattern, i_pattern, sub_pattern]
