@@ -49,10 +49,19 @@ def collect_conjunctions_from_file(file_name):
 
 def main():
     conjunctions = {}
+    counter = 0;
+    try:
+        os.mkdir("conjunctions")
+    except:
+        pass
+
     for f in os.listdir("data"):
         result = collect_conjunctions_from_file(f)
         conjunctions.update(result)
-    json.dump(conjunctions, codecs.open("data/conjunctions.json", "w", encoding='utf-8'))
+        if len(conjunctions) > 1000:
+            json.dump(conjunctions, codecs.open("conjunctions/conjunctions" + str(counter)+ ".json", "w", encoding='utf-8'))
+            counter = counter + 1
+            conjunctions = {}
 
 if __name__ == "__main__":
     main()

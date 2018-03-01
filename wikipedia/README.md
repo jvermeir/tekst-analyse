@@ -36,6 +36,7 @@ python text_analyzer.py
 - **done:**  extract sentences
 - **done:** store sentences in database
 - **done:** extract only sentences that contain specific words like 'maar', 'want', 'daardoor' ...
+- fix errors like: Mus%C3%A9e_Goupil
 
 ## stuff
 

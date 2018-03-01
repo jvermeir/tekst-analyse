@@ -26,7 +26,9 @@ def main():
                         chunk = s[start_of_chunk:end_of_chunk]
                         output_file_name = "chunks/" + base_name + str(i) + ".json"
                         with codecs.open(output_file_name, "w", encoding='utf-8') as out:
-                            out.write("{" + chunk + "]}")
+                            if chunk[0] != "{":
+                                out.write("{")
+                            out.write(chunk + "]}")
                         start_of_chunk = end_of_chunk + 2
                         end_of_chunk = start_of_chunk
                         i = i + 1
