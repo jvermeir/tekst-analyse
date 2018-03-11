@@ -11,7 +11,7 @@ def collect_conjunctions_from_file(file_name):
     print ("file: " + file_name)
     result = []
     try:
-        json_data = json.load(open("data/" + file_name, "r"))
+        json_data = json.load(open(file_name, "r"))
         for key in json_data.keys():
             lines = json_data.get(key)
             previous_line = ""
@@ -38,7 +38,7 @@ def main():
         pass
 
     for f in os.listdir("data"):
-        result = collect_conjunctions_from_file(f)
+        result = collect_conjunctions_from_file("data/" + f)
         conjunctions = conjunctions + result
         if len(conjunctions) > 1000:
             if len(conjunctions) > 0:
