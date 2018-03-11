@@ -11,6 +11,9 @@ def main():
     conjunctions = text.collect_conjunctions_from_file(file_name)
     with codecs.open("conjunctions/" + file_name + "_output.json", "w", encoding='utf-8') as output_file:
         output_file.write(conjunction.Conjunction.toJson(conjunctions))
+    with codecs.open("conjunctions/" + file_name + "_output.csv", "w", encoding='utf-8') as output_file:
+        output_file.write(conjunction.Conjunction.toCSV(conjunctions))
+
 
 
 def getopts(argv):

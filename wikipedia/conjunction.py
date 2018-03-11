@@ -39,3 +39,12 @@ class Conjunction():
             if len(c.word) > 0:
                 text = text + json.dumps(c.__dict__) + ","
         return text[:len(text) - 1] + "]"
+
+
+    @classmethod
+    def toCSV(cls, conjunctions):
+        text = ""
+        for c in conjunctions:
+            if len(c.word) > 0:
+                text = text + '"' + c.left + '","' + c.word + '","' + c.right + '"\n'
+        return text
